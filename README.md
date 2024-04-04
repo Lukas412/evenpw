@@ -2,9 +2,10 @@
 
 A password generator that aims to generate easy to type passwords.
 
-> **The Problem**
-> Often when you type a password you have awkward finger positions and use both hands unevenly.
-> This generator aims to reduce this.
+## The Problem
+
+Often when you type a password you have awkward finger positions and use both hands unevenly.
+This generator aims to reduce this.
 
 ## Installation
 
