@@ -1,5 +1,8 @@
+use std::{thread::sleep, time::Duration};
+
 use clap::{value_parser, Arg, ArgAction, Command};
-use german_querz::GermanQuertzLayout;
+use copypasta::ClipboardProvider;
+use quertz::GermanQuertzLayout;
 use rand::{seq::SliceRandom, Rng};
 
 struct Settings {
@@ -41,7 +44,7 @@ trait PwGenerator {
     }
 }
 
-mod german_querz;
+mod quertz;
 
 fn main() {
     let cli = Command::new("evenpw")
@@ -60,6 +63,7 @@ fn main() {
             Arg::new("copy")
                 .short('c')
                 .long("copy")
+                .action(ArgAction::SetTrue)
                 .help("copy the last password to the clipboard"),
             Arg::new("hand-switch")
                 .short('s')
@@ -87,8 +91,8 @@ fn main() {
 
     let settings = Settings {
         length,
-        hand_switch: 1,
-        shift_hand_switch: 2,
+        hand_switch: cli.get_one("hand-switch").copied().unwrap_or(1),
+        shift_hand_switch: cli.get_one("shift-hand-switch").copied().unwrap_or(2),
         shifting_ratio: 1. / 3.,
         special_ratio: 1. / 4.,
     };
@@ -103,4 +107,24 @@ fn main() {
 
         println!("{}", buffer);
     }
+
+    if !cli.get_flag("copy") {
+        return;
+    }
+    let Ok(mut clipboard) = copypasta::ClipboardContext::new() else {
+        eprintln!("ERROR could not open clipboard context!");
+        return;
+    };
+
+    if let Err(error) = clipboard.set_contents(buffer) {
+        eprintln!("ERROR could not set clipboard content!");
+        eprintln!("ORIGINAL ERROR {}", error);
+        return;
+    };
+
+    wait_for_copy_to_be_completed();
+}
+
+fn wait_for_copy_to_be_completed() {
+    sleep(Duration::from_millis(10));
 }
